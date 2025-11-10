@@ -60,21 +60,39 @@ def matches_interest(job):
 def build_email_html(jobs):
     if not jobs:
         return "<p>No new relevant jobs found today.</p>"
-    html_content = ["<h2>🚀 Job Finder Results</h2><ul>"]
+
+    html_content = [
+        "<h2>🚀 Job Finder Results</h2>",
+        "<p>Click the job title to open the application link in your browser.</p>",
+        "<ul>"
+    ]
+
     for j in jobs:
         title = html.escape(j.get("title", "N/A"))
         company = html.escape(j.get("company_name", ""))
         location = html.escape(j.get("location", ""))
-        date_posted = j.get("detected_extensions", {}).get("posted_at", "")
-        link = j.get("apply_link") or j.get("link") or "#"
-        snippet = html.escape(j.get("description", "")[:300])
+        date_posted = j.get("detected_extensions", {}).get("posted_at", "N/A")
+
+        # Prefer apply_link (real job page), fallback to link
+        link = j.get("apply_link") or j.get("link") or None
+        if link:
+            # Escape &amp; correctly for Gmail safe HTML
+            safe_link = html.escape(link, quote=True)
+            clickable = f"<a href='{safe_link}' target='_blank' rel='noopener noreferrer'>{title}</a>"
+        else:
+            clickable = title + " (link not available)"
+
+        snippet = html.escape(j.get("description", "")[:250])
         html_content.append(f"""
         <li>
-          <strong><a href="{link}" target="_blank">{title}</a></strong> at {company} — {location}<br/>
+          <strong>{clickable}</strong><br/>
+          <em>Company:</em> {company}<br/>
+          <em>Location:</em> {location}<br/>
           <em>Posted:</em> {date_posted}<br/>
-          {snippet}<br/><br/>
+          <p>{snippet}</p><br/>
         </li>
         """)
+
     html_content.append("</ul>")
     return "\n".join(html_content)
 
