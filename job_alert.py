@@ -77,32 +77,36 @@ def build_email_html(jobs):
     ]
 
     for j in jobs:
-       title = html.escape(j.get("title", "N/A"))
-       company = html.escape(j.get("company_name", ""))
-       location = html.escape(j.get("location", ""))
-       date_posted = j.get("detected_extensions", {}).get("posted_at", "N/A")
+        title = html.escape(j.get("title", "N/A"))
+        company = html.escape(j.get("company_name", ""))
+        location = html.escape(j.get("location", ""))
+        date_posted = j.get("detected_extensions", {}).get("posted_at", "N/A")
 
-    # Prefer apply_link; fallback to link
-       link = j.get("apply_link") or j.get("link")
-       if not link:
-         continue  # skip jobs without any link
+        # Try getting a real apply link
+        link = j.get("apply_link") or j.get("link")
 
-       safe_link = html.escape(link.strip(), quote=True)
-       snippet = html.escape(j.get("description", "")[:250])
+        # ✅ Fallback: if no valid link, make a Google search link for that job
+        if not link or not link.startswith("http"):
+            query_str = f"{j.get('title','')} {j.get('company_name','')} job"
+            search_url = f"https://www.google.com/search?q={requests.utils.quote(query_str)}"
+            link = search_url
 
-       html_content.append(f"""
-      <li>
-            <strong><a href="{safe_link}" target="_blank" rel="noopener noreferrer">{title}</a></strong><br/>
-            <em>Company:</em> {company}<br/>
-            <em>Location:</em> {location}<br/>
-            <em>Posted:</em> {date_posted}<br/>
-            <p>{snippet}</p><br/>
-      </li>
-      """)
+        safe_link = html.escape(link.strip(), quote=True)
+        snippet = html.escape(j.get("description", "")[:250])
 
+        html_content.append(f"""
+        <li>
+          <strong><a href="{safe_link}" target="_blank" rel="noopener noreferrer">{title}</a></strong><br/>
+          <em>Company:</em> {company}<br/>
+          <em>Location:</em> {location}<br/>
+          <em>Posted:</em> {date_posted}<br/>
+          <p>{snippet}</p><br/>
+        </li>
+        """)
 
     html_content.append("</ul>")
     return "\n".join(html_content)
+
 
 def send_email(subject, html_body):
     msg = MIMEMultipart("alternative")
