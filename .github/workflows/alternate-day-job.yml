@@ -2,7 +2,7 @@ name: Alternate Day Job Alert
 
 on:
   schedule:
-    - cron: '30 14 */2 * *'  # Every alternate day at 8 PM IST
+    - cron: '*/10 * * * *'  # Every alternate day at 8 PM IST
   workflow_dispatch:
 
 jobs:
