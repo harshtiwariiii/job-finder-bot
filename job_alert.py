@@ -68,29 +68,30 @@ def build_email_html(jobs):
     ]
 
     for j in jobs:
-    title = html.escape(j.get("title", "N/A"))
-    company = html.escape(j.get("company_name", ""))
-    location = html.escape(j.get("location", ""))
-    date_posted = j.get("detected_extensions", {}).get("posted_at", "N/A")
+        title = html.escape(j.get("title", "N/A"))
+        company = html.escape(j.get("company_name", ""))
+        location = html.escape(j.get("location", ""))
+        date_posted = j.get("detected_extensions", {}).get("posted_at", "N/A")
 
     # Prefer real apply link, fallback to Google redirect link
-    link = j.get("apply_link") or j.get("link")
-    if not link or not link.startswith("http"):
+        link = j.get("apply_link") or j.get("link")
+        if not link or not link.startswith("http"):
         # skip empty/broken links
-        continue
+           continue
 
-    safe_link = html.escape(link, quote=True)
-    snippet = html.escape(j.get("description", "")[:250])
+        safe_link = html.escape(link, quote=True)
+        snippet = html.escape(j.get("description", "")[:250])
 
-    html_content.append(f"""
-    <li>
-      <strong><a href="{safe_link}" target="_blank" rel="noopener noreferrer">{title}</a></strong><br/>
-      <em>Company:</em> {company}<br/>
-      <em>Location:</em> {location}<br/>
-      <em>Posted:</em> {date_posted}<br/>
-      <p>{snippet}</p><br/>
-    </li>
-    """)
+        html_content.append(f"""
+        <li>
+            <strong><a href="{safe_link}" target="_blank" rel="noopener noreferrer">{title}</a></strong><br/>
+            <em>Company:</em> {company}<br/>
+            <em>Location:</em> {location}<br/>
+            <em>Posted:</em> {date_posted}<br/>
+            <p>{snippet}</p><br/>
+        </li>
+        """)
+
 
     html_content.append("</ul>")
     return "\n".join(html_content)
